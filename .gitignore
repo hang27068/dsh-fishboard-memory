@@ -1,0 +1,26 @@
+# 备份文件（改代码前自动留的）—— 这些不该发出去
+*.before-*
+*.bak
+*.bak.*
+
+# 记忆库本体（私人数据）
+fish-memory/
+*.jsonl
+
+# 系统垃圾
+.DS_Store
+Thumbs.db
+node_modules/
+
+# 本机配置、凭据与运行日志
+.env
+.env.*
+*.log
+*.local
+config.local.*
+credentials.*
+
+# 公开仓库不提交个人验收数据
+tests/fixtures/private/
+reports/
+exports/

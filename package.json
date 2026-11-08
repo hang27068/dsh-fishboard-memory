@@ -1,0 +1,70 @@
+{
+  "name": "dsh-fishboard-memory",
+  "version": "1.0.0",
+  "description": "鱼板记忆：面向 DSH 的五层长期记忆、事件提炼与受控召回插件。",
+  "author": "hang27068",
+  "contributors": [
+    "Yuuyuko (original dsh-fish-memory author)"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "check": "node scripts/check.mjs",
+    "test": "node scripts/check.mjs"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh-plugin",
+    "memory",
+    "long-term-memory",
+    "ai-companion"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hang27068/dsh-fishboard-memory.git"
+  },
+  "homepage": "https://github.com/hang27068/dsh-fishboard-memory#readme",
+  "bugs": {
+    "url": "https://github.com/hang27068/dsh-fishboard-memory/issues"
+  },
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "README.md",
+    "NOTICE.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "slots"
+      ],
+      "external": [
+        "react"
+      ]
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-tools": "*",
+    "@deepseek-ai/dsh-llm": "*"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/dsh-tools": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-llm": {
+      "optional": true
+    }
+  }
+}
