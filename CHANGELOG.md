@@ -1,3 +1,29 @@
+## 1.0.2 — 2026-11-09
+
+**私聊不能再进 legacy 事实入口：两个入口按会话 scope 硬隔离**
+
+- 🐛 严重：`POST /dsh-fishboard-memory/facts/run`（legacy / 群聊路径）**原来完全不看会话类型**。
+  一个 28 张事件卡全是 `scope=private` 的会话被它直接接受，
+  25 条候选**绕过私聊严格准入**（`privateStrictProduction` 的开关、白名单、双阶段确认全部被跳过）
+  写进了正式 `facts`。整轮已按执行前备份回退。
+- ✅ 新增共享判定器 `判定会话scope(sid)`：两个事实入口**唯一**的会话类型来源。
+  只看事件卡自身，不看配置白名单、session 名、QQ 号、agent、请求头。
+  返回 `private` / `group` / `mixed` / `unknown` / `empty` / `read_failed`。
+- ✅ legacy `/facts/run` 及其内部 `整理一个(sid)` 现在**只接受 `type === 'group'`**。
+  其余一律 fail closed，且顺序固定：先判 scope → 非群聊立即返回 →
+  **不读 fact-state、不查模型、不跑模型、不写 facts/conflicts、不动水位与连败**。
+- ✅ 私聊被拒时明确回：`{ok:false, 跑了:false, 会话类型:"private", 入口:"legacy-facts",
+  应使用:"private-strict-production", 写事实:0, 状态写了:false}`。
+  **不自动转发**到严格入口 —— 自动转发等于替用户绕过严格入口的开关、白名单和双阶段确认。
+- ✅ 严格入口（`private-strict-production` 的 preview/commit）仍只接受 `type === 'private'`，
+  判定改为调用同一个共享判定器，不再自己算一遍（否则两份判断迟早漂）。
+- ✅ `GET /facts/state` 增加可观察字段：`会话类型` / `legacy入口允许` / `strict入口允许` /
+  `scope统计` / `拒绝原因`，与既有的 `factsModel` 状态并存。只读，不调模型、不写状态。
+- 🔧 `eventsModel`、事件层、群聊主体隔离、`recall-engine` 行为均未改动；
+  1.0.1 的 `factsModel` 模型隔离完整保留。
+- 测试：`node --test tests/*.test.mjs` 41 项全过（新增 `tests/事实入口硬隔离.test.mjs` 21 项）；
+  `node scripts/check.mjs` 28 个库文件通过。
+
 ## 1.0.1 — 2026-11-09
 
 **旧事实层改用独立的 `factsModel`，不再跟着全局 `llmModel` 走**
