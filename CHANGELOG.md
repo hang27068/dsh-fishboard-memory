@@ -1,3 +1,28 @@
+## 1.0.1 — 2026-11-09
+
+**旧事实层改用独立的 `factsModel`，不再跟着全局 `llmModel` 走**
+
+- 🐛 旧入口 `POST /dsh-fishboard-memory/facts/run` 的「主提炼 + 四个裁判」原来都不传模型，
+  于是落进 `取模型(ctx, agent)`，用的是全局 `llmModel`。该模型在长输入下会滑进
+  「会话归档摘要」那个 schema，吐出来没有 `facts` 数组 → `schema_invalid` → fail closed
+  → 事实水位不推进 → 下一轮还是同一批。**实测后果：水位死卡在 4/28 张事件卡，
+  从 11-02 之后再没提炼过任何东西。**
+- 🐛 更隐蔽的一处：四个裁判传的是 `{ temperature: 0 }`，没有 `provider` / `model`。
+  而 `问模型` 的判定是 `指定 && 指定.provider && 指定.model ? 指定 : 取模型(...)` ——
+  条件不成立时**整个对象被丢掉**，于是裁判不仅用了 `llmModel`，
+  连 `temperature: 0` 也一起没了（变回默认 0.1），裁判的确定性也一并失效。
+- ✅ 新增 `factsModel` 选择：`取事实层模型()` 只读配置里的 `factsModel`，
+  `事实层模型注册状态()` 查宿主注册表确认 provider/model 真实存在。
+- ✅ 主提炼与四个裁判**共用同一个** `指定模型` 对象，五条路径同源。
+- ✅ fail closed：`factsModel` 缺失 / `provider` 或 `model` 不完整 / 注册表查不到 /
+  注册表查询抛错 —— 一律**0 次模型调用、0 次 fact-state 写入**，
+  绝不回退到 `llmModel`、`eventsModel`、会话模型或 agent 模型。
+- ✅ `GET /facts/state` 增加 `模型` 字段（`指定模型` / `模型状态` / `选模来源`），
+  只读、只查注册表，**不发起任何补全请求**。
+- 🔧 `eventsModel` 与事件层行为一个字节未改；`privateStrictProduction` 未受影响。
+- 测试：`node --test tests/事实层-专用模型隔离.test.mjs` 20 项全过；
+  `node scripts/check.mjs` 28 个库文件通过。
+
 ## 1.3.3 — 2026-10-26
 
 **记忆库改成原子写：写失败不会再假装成功**
