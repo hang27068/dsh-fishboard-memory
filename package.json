@@ -1,6 +1,6 @@
 {
   "name": "dsh-fishboard-memory",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "鱼板记忆：面向 DSH 的五层长期记忆、事件提炼与受控召回插件。",
   "author": "hang27068",
   "contributors": [
