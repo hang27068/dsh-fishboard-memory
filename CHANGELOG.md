@@ -1,3 +1,33 @@
+## 1.0.5 — 2026-11-09
+
+**行为频率 ≠ 偏好态度：正向偏好必须有明确态度证据，routine 必须保留时间/频率限定词**
+
+- 🐛 真实失败：2026-11-09 21:55 受控 preview 里，
+  证据「跟朋友一起玩游戏」「我晚上经常和他们一起玩游戏」被写成了
+  `user.preference.hobby = 喜欢和朋友一起玩游戏`（category=preference，accept）。
+  原话只说「晚上经常玩」，**没有一个字说喜欢** ——「经常做」被读成了「喜欢做」。
+  一个人可以经常做一件自己并不喜欢的事；多个事件重复证明的是**行为规律**，不是喜欢。
+  正确处理应是 `user.game.plays` + `category=routine` +
+  value「晚上经常和朋友一起玩游戏」。
+- ✅ 新增确定性闸门 `查偏好态度显式`（拒绝码 `strict_preference_attitude_not_explicit`）：
+  四个正向偏好 predicate（`hobby` / `food` / `drink` / `music`）必须有**证据原句**里
+  明确出现 喜欢／爱／爱好／偏爱／中意／钟爱／爱吃／爱喝 这类态度词，否则拒绝。
+  只有 经常／平时／通常／总是／每天／习惯 → 拒绝。
+  ⚠ 只认证据原句，不认模型自己写的 value —— 否则那个「喜欢」可以自证。
+- ✅ 新增确定性闸门 `查routine限定词保留`：`category=routine` 的 value 必须
+  保留证据里的时间词（晚上/白天/周末…）和频次词（经常/平时/每天…），
+  且不许把低频档扩大成「每天/每晚/天天」，不许出现偏好态度词。
+  命中规则：`time_word_dropped` / `frequency_word_dropped` /
+  `frequency_inflated` / `attitude_word_on_routine`。
+- ⚠ 顺序刻意排为 `身份 → 极性 → 态度 → routine → 情境 → 裁判`：
+  极性闸（1.0.4）排在态度闸之前，`hobby=讨厌淋雨` 仍报
+  `strict_preference_polarity_mismatch`，不被新闸门抢走拒绝码。
+- ⚠ 只拒不改：不改键（不把 hobby 自动改成 game.plays）、不重写 value、
+  不删否定词、不补词。拒绝记录保留模型原始的 predicate 和 value。
+- ✅ 主提炼提示词新增五条硬要求 + 本样本的正误对照示例。
+- ✅ 新增 `tests/事实层-频率与态度.test.mjs`（30 项）。
+  全量 130 项 / 0 fail。
+
 ## 1.0.4 — 2026-11-09
 
 **新增负向偏好 predicate `user.preference.dislike`，并加偏好极性一致性硬边界**
